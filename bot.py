@@ -9,7 +9,6 @@ import random
 import re
 from datetime import datetime
 from flask import Flask
-import asyncio
 
 # ============================================================
 # FLASK APP (Render Health Check)
@@ -41,24 +40,23 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 OWNER_ID = int(os.environ.get("OWNER_ID", 8586849798))
 
 # ============================================================
-# STYLISH CHARACTERS
+# STYLISH CHARACTERS (𝐀 𝐁 𝐂 wale)
 # ============================================================
 STYLISH = {
-    'A': '𝙰', 'B': '𝙱', 'C': '𝙲', 'D': '𝙳', 'E': '𝙴', 'F': '𝙵', 'G': '𝙶',
-    'H': '𝙷', 'I': '𝙸', 'J': '𝙹', 'K': '𝙺', 'L': '𝙻', 'M': '𝙼', 'N': '𝙽',
-    'O': '𝙾', 'P': '𝙿', 'Q': '𝚀', 'R': '𝚁', 'S': '𝚂', 'T': '𝚃', 'U': '𝚄',
-    'V': '𝚅', 'W': '𝚆', 'X': '𝚇', 'Y': '𝚈', 'Z': '𝚉',
-    'a': '𝚊', 'b': '𝚋', 'c': '𝚌', 'd': '𝚍', 'e': '𝚎', 'f': '𝚏',
-    'g': '𝚐', 'h': '𝚑', 'i': '𝚒', 'j': '𝚓', 'k': '𝚔', 'l': '𝚕',
-    'm': '𝚖', 'n': '𝚗', 'o': '𝚘', 'p': '𝚙', 'q': '𝚚', 'r': '𝚛',
-    's': '𝚜', 't': '𝚝', 'u': '𝚞', 'v': '𝚟', 'w': '𝚠', 'x': '𝚡',
-    'y': '𝚢', 'z': '𝚣',
-    '0': '𝟶', '1': '𝟷', '2': '𝟸', '3': '𝟹', '4': '𝟺',
-    '5': '𝟻', '6': '𝟼', '7': '𝟽', '8': '𝟾', '9': '𝟿'
+    'A': '𝐀', 'B': '𝐁', 'C': '𝐂', 'D': '𝐃', 'E': '𝐄', 'F': '𝐅', 'G': '𝐆',
+    'H': '𝐇', 'I': '𝐈', 'J': '𝐉', 'K': '𝐊', 'L': '𝐋', 'M': '𝐌', 'N': '𝐍',
+    'O': '𝐎', 'P': '𝐏', 'Q': '𝐐', 'R': '𝐑', 'S': '𝐒', 'T': '𝐓', 'U': '𝐔',
+    'V': '𝐕', 'W': '𝐖', 'X': '𝐗', 'Y': '𝐘', 'Z': '𝐙',
+    'a': '𝐚', 'b': '𝐛', 'c': '𝐜', 'd': '𝐝', 'e': '𝐞', 'f': '𝐟',
+    'g': '𝐠', 'h': '𝐡', 'i': '𝐢', 'j': '𝐣', 'k': '𝐤', 'l': '𝐥',
+    'm': '𝐦', 'n': '𝐧', 'o': '𝐨', 'p': '𝐩', 'q': '𝐪', 'r': '𝐫',
+    's': '𝐬', 't': '𝐭', 'u': '𝐮', 'v': '𝐯', 'w': '𝐰', 'x': '𝐱',
+    'y': '𝐲', 'z': '𝐳',
+    '0': '𝟎', '1': '𝟏', '2': '𝟐', '3': '𝟑', '4': '𝟒',
+    '5': '𝟓', '6': '𝟔', '7': '𝟕', '8': '𝟖', '9': '𝟗'
 }
 
 def stylish(text):
-    """Convert normal text to stylish characters"""
     return ''.join(STYLISH.get(c, c) for c in text)
 
 # ============================================================
@@ -122,7 +120,6 @@ def e(name):
     return get_emoji_html(name)
 
 def get_random_emojis(count=2):
-    """Get random premium emojis"""
     names = list(PREMIUM_EMOJIS.keys())
     if not names:
         return ["", ""]
@@ -130,13 +127,11 @@ def get_random_emojis(count=2):
     return [e(name) for name in selected]
 
 def format_with_emojis(text):
-    """Har line ke aage-piche premium emoji + stylish characters"""
     lines = text.split('\n')
     result = []
     for line in lines:
         if line.strip():
             left, right = get_random_emojis(2)
-            # Stylish characters apply karo
             styled_line = stylish(line)
             result.append(f"{left} {styled_line} {right}")
         else:
@@ -207,18 +202,60 @@ def save_users(users):
         pass
 
 # ============================================================
+# /start COMMAND
+# ============================================================
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    chat_type = update.effective_chat.type
+    
+    users = load_users()
+    if str(user_id) not in users:
+        users[str(user_id)] = {
+            "username": update.effective_user.username or "NoUsername",
+            "first_seen": datetime.now().isoformat()
+        }
+        save_users(users)
+    
+    # GROUP MEIN - BOT ACTIVE READY TO USE
+    if chat_type in ['group', 'supergroup']:
+        msg = """𝐁𝐎𝐓 𝐀𝐂𝐓𝐈𝐕𝐄 𝐑𝐄𝐀𝐃𝐘 𝐓𝐎 𝐔𝐒𝐄
+
+𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬:
+/𝐝𝐢𝐜𝐞 - 𝐑𝐨𝐥𝐥 𝐝𝐢𝐜𝐞 (𝟏-𝟔)
+/𝐟𝐥𝐢𝐩𝐜𝐨𝐢𝐧 - 𝐅𝐥𝐢𝐩 𝐜𝐨𝐢𝐧
+/𝐞𝐦 𝐭𝐞𝐱𝐭 - 𝐀𝐝𝐝 𝐞𝐦𝐨𝐣𝐢𝐬
+/𝐚𝐥𝐥 - 𝐒𝐡𝐨𝐰 𝐞𝐦𝐨𝐣𝐢𝐬
+
+𝐎𝐧𝐥𝐲 𝐠𝐫𝐨𝐮𝐩 𝐚𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐮𝐬𝐞 /𝐝𝐢𝐜𝐞 & /𝐟𝐥𝐢𝐩𝐜𝐨𝐢𝐧"""
+        await update.message.reply_text(format_with_emojis(msg), parse_mode="HTML")
+        return
+    
+    # PRIVATE CHAT - Normal user commands
+    msg = """𝐁𝐄𝐓𝐓𝐈𝐍𝐆 𝐁𝐎𝐓
+
+𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬:
+/𝐝𝐢𝐜𝐞 - 𝐑𝐨𝐥𝐥 𝐝𝐢𝐜𝐞 (𝟏-𝟔)
+/𝐟𝐥𝐢𝐩𝐜𝐨𝐢𝐧 - 𝐅𝐥𝐢𝐩 𝐜𝐨𝐢𝐧 (𝐇𝐄𝐀𝐃/𝐓𝐀𝐈𝐋)
+/𝐞𝐦 𝐭𝐞𝐱𝐭 - 𝐀𝐝𝐝 𝐩𝐫𝐞𝐦𝐢𝐮𝐦 𝐞𝐦𝐨𝐣𝐢𝐬
+/𝐚𝐥𝐥 - 𝐒𝐡𝐨𝐰 𝐚𝐥𝐥 𝐩𝐫𝐞𝐦𝐢𝐮𝐦 𝐞𝐦𝐨𝐣𝐢𝐬
+
+━━━━━━━━━━━━━━━━━━
+𝐎𝐧𝐥𝐲 𝐠𝐫𝐨𝐮𝐩 𝐚𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐮𝐬𝐞 /𝐝𝐢𝐜𝐞 & /𝐟𝐥𝐢𝐩𝐜𝐨𝐢𝐧"""
+    
+    await update.message.reply_text(format_with_emojis(msg), parse_mode="HTML")
+
+# ============================================================
 # /dice COMMAND
 # ============================================================
 async def dice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     
-    # Group admin check
     if update.effective_chat.type in ['group', 'supergroup']:
         try:
             chat_member = await context.bot.get_chat_member(update.effective_chat.id, user_id)
             if chat_member.status not in ['administrator', 'creator'] and user_id != OWNER_ID:
                 await update.message.reply_text(
-                    format_with_emojis("Only group admins can roll dice!"),
+                    format_with_emojis("𝐎𝐧𝐥𝐲 𝐠𝐫𝐨𝐮𝐩 𝐚𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐫𝐨𝐥𝐥 𝐝𝐢𝐜𝐞!"),
                     parse_mode="HTML"
                 )
                 return
@@ -233,10 +270,10 @@ async def dice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         result = random.randint(1, 6)
     
-    msg = f"""DICE ROLLED
-ADMIN - {stylish(update.effective_user.first_name)}
+    msg = f"""𝐃𝐈𝐂𝐄 𝐑𝐎𝐋𝐋𝐄𝐃
+𝐀𝐃𝐌𝐈𝐍 - {stylish(update.effective_user.first_name)}
 
-RESULT - {stylish(str(result))}"""
+𝐑𝐄𝐒𝐔𝐋𝐓 - {stylish(str(result))}"""
     
     await update.message.reply_text(format_with_emojis(msg), parse_mode="HTML")
 
@@ -246,13 +283,12 @@ RESULT - {stylish(str(result))}"""
 async def flipcoin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     
-    # Group admin check
     if update.effective_chat.type in ['group', 'supergroup']:
         try:
             chat_member = await context.bot.get_chat_member(update.effective_chat.id, user_id)
             if chat_member.status not in ['administrator', 'creator'] and user_id != OWNER_ID:
                 await update.message.reply_text(
-                    format_with_emojis("Only group admins can flip coin!"),
+                    format_with_emojis("𝐎𝐧𝐥𝐲 𝐠𝐫𝐨𝐮𝐩 𝐚𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐟𝐥𝐢𝐩 𝐜𝐨𝐢𝐧!"),
                     parse_mode="HTML"
                 )
                 return
@@ -267,29 +303,29 @@ async def flipcoin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         result = random.choice(["HEAD", "TAIL"])
     
-    msg = f"""COIN FLIPPED
-ADMIN - {stylish(update.effective_user.first_name)}
+    msg = f"""𝐂𝐎𝐈𝐍 𝐅𝐋𝐈𝐏𝐏𝐄𝐃
+𝐀𝐃𝐌𝐈𝐍 - {stylish(update.effective_user.first_name)}
 
-RESULT - {stylish(result)}"""
+𝐑𝐄𝐒𝐔𝐋𝐓 - {stylish(result)}"""
     
     await update.message.reply_text(format_with_emojis(msg), parse_mode="HTML")
 
 # ============================================================
-# /forcedice COMMAND
+# /forcedice - ADMIN ONLY (Users ko nahi dikhega)
 # ============================================================
 async def forcedice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     
     if user_id != OWNER_ID and user_id not in load_admins():
         await update.message.reply_text(
-            format_with_emojis("Only owner/admins can force dice!"),
+            format_with_emojis("𝐎𝐧𝐥𝐲 𝐨𝐰𝐧𝐞𝐫/𝐚𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐟𝐨𝐫𝐜𝐞 𝐝𝐢𝐜𝐞!"),
             parse_mode="HTML"
         )
         return
     
     if not context.args:
         await update.message.reply_text(
-            format_with_emojis("Usage: /forcedice 1-6"),
+            format_with_emojis("𝐔𝐬𝐚𝐠𝐞: /𝐟𝐨𝐫𝐜𝐞𝐝𝐢𝐜𝐞 𝟏-𝟔"),
             parse_mode="HTML"
         )
         return
@@ -298,7 +334,7 @@ async def forcedice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         num = int(context.args[0])
         if num < 1 or num > 6:
             await update.message.reply_text(
-                format_with_emojis("Number must be between 1 and 6"),
+                format_with_emojis("𝐍𝐮𝐦𝐛𝐞𝐫 𝐦𝐮𝐬𝐭 𝐛𝐞 𝐛𝐞𝐭𝐰𝐞𝐞𝐧 𝟏 𝐚𝐧𝐝 𝟔"),
                 parse_mode="HTML"
             )
             return
@@ -308,31 +344,31 @@ async def forcedice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         save_force(force_data)
         
         await update.message.reply_text(
-            format_with_emojis(f"Next dice roll will be {stylish(str(num))}!"),
+            format_with_emojis(f"𝐍𝐞𝐱𝐭 𝐝𝐢𝐜𝐞 𝐫𝐨𝐥𝐥 𝐰𝐢𝐥𝐥 𝐛𝐞 {stylish(str(num))}!"),
             parse_mode="HTML"
         )
     except:
         await update.message.reply_text(
-            format_with_emojis("Invalid number!"),
+            format_with_emojis("𝐈𝐧𝐯𝐚𝐥𝐢𝐝 𝐧𝐮𝐦𝐛𝐞𝐫!"),
             parse_mode="HTML"
         )
 
 # ============================================================
-# /forcecoin COMMAND
+# /forcecoin - ADMIN ONLY (Users ko nahi dikhega)
 # ============================================================
 async def forcecoin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     
     if user_id != OWNER_ID and user_id not in load_admins():
         await update.message.reply_text(
-            format_with_emojis("Only owner/admins can force coin!"),
+            format_with_emojis("𝐎𝐧𝐥𝐲 𝐨𝐰𝐧𝐞𝐫/𝐚𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐟𝐨𝐫𝐜𝐞 𝐜𝐨𝐢𝐧!"),
             parse_mode="HTML"
         )
         return
     
     if not context.args:
         await update.message.reply_text(
-            format_with_emojis("Usage: /forcecoin HEAD/TAIL"),
+            format_with_emojis("𝐔𝐬𝐚𝐠𝐞: /𝐟𝐨𝐫𝐜𝐞𝐜𝐨𝐢𝐧 𝐇𝐄𝐀𝐃/𝐓𝐀𝐈𝐋"),
             parse_mode="HTML"
         )
         return
@@ -340,7 +376,7 @@ async def forcecoin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     result = context.args[0].upper()
     if result not in ["HEAD", "TAIL"]:
         await update.message.reply_text(
-            format_with_emojis("Must be HEAD or TAIL"),
+            format_with_emojis("𝐌𝐮𝐬𝐭 𝐛𝐞 𝐇𝐄𝐀𝐃 𝐨𝐫 𝐓𝐀𝐈𝐋"),
             parse_mode="HTML"
         )
         return
@@ -350,26 +386,26 @@ async def forcecoin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     save_force(force_data)
     
     await update.message.reply_text(
-        format_with_emojis(f"Next coin flip will be {stylish(result)}!"),
+        format_with_emojis(f"𝐍𝐞𝐱𝐭 𝐜𝐨𝐢𝐧 𝐟𝐥𝐢𝐩 𝐰𝐢𝐥𝐥 𝐛𝐞 {stylish(result)}!"),
         parse_mode="HTML"
     )
 
 # ============================================================
-# /approve COMMAND
+# /approve - OWNER ONLY
 # ============================================================
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     
     if user_id != OWNER_ID:
         await update.message.reply_text(
-            format_with_emojis("Only owner can approve admins!"),
+            format_with_emojis("𝐎𝐧𝐥𝐲 𝐨𝐰𝐧𝐞𝐫 𝐜𝐚𝐧 𝐚𝐩𝐩𝐫𝐨𝐯𝐞 𝐚𝐝𝐦𝐢𝐧𝐬!"),
             parse_mode="HTML"
         )
         return
     
     if not context.args:
         await update.message.reply_text(
-            format_with_emojis("Usage: /approve USER_ID"),
+            format_with_emojis("𝐔𝐬𝐚𝐠𝐞: /𝐚𝐩𝐩𝐫𝐨𝐯𝐞 𝐔𝐒𝐄𝐑_𝐈𝐃"),
             parse_mode="HTML"
         )
         return
@@ -379,62 +415,54 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
         admins = load_admins()
         if new_admin in admins:
             await update.message.reply_text(
-                format_with_emojis("Already an admin!"),
+                format_with_emojis("𝐀𝐥𝐫𝐞𝐚𝐝𝐲 𝐚𝐧 𝐚𝐝𝐦𝐢𝐧!"),
                 parse_mode="HTML"
             )
             return
         admins.append(new_admin)
         save_admins(admins)
         await update.message.reply_text(
-            format_with_emojis(f"User {stylish(str(new_admin))} is now an admin!"),
+            format_with_emojis(f"𝐔𝐬𝐞𝐫 {stylish(str(new_admin))} 𝐢𝐬 𝐧𝐨𝐰 𝐚𝐧 𝐚𝐝𝐦𝐢𝐧!"),
             parse_mode="HTML"
         )
     except:
         await update.message.reply_text(
-            format_with_emojis("Invalid user ID!"),
+            format_with_emojis("𝐈𝐧𝐯𝐚𝐥𝐢𝐝 𝐮𝐬𝐞𝐫 𝐈𝐃!"),
             parse_mode="HTML"
         )
 
 # ============================================================
-# /all COMMAND
+# /all - SHOW ALL EMOJIS
 # ============================================================
 async def all_emojis(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = "PREMIUM EMOJIS\n━━━━━━━━━━━━━━━━━━\n"
+    msg = "𝐏𝐑𝐄𝐌𝐈𝐔𝐌 𝐄𝐌𝐎𝐉𝐈𝐒\n━━━━━━━━━━━━━━━━━━\n"
     for name in PREMIUM_EMOJIS:
         msg += f"{e(name)} {stylish(name)}\n"
     msg += "\n━━━━━━━━━━━━━━━━━━"
     await update.message.reply_text(format_with_emojis(msg), parse_mode="HTML")
 
 # ============================================================
-# /em COMMAND - Users can also use
+# /em COMMAND - Users can use
 # ============================================================
 async def em_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """/em text - Add premium emojis around text (Users can use)"""
-    user_id = update.effective_user.id
-    
-    # Check if banned
-    # (banned check optional)
-    
     if not context.args:
         await update.message.reply_text(
-            format_with_emojis("Usage: /em your text here"),
+            format_with_emojis("𝐔𝐬𝐚𝐠𝐞: /𝐞𝐦 𝐲𝐨𝐮𝐫 𝐭𝐞𝐱𝐭 𝐡𝐞𝐫𝐞"),
             parse_mode="HTML"
         )
         return
     
-    # Get full text after /em
     full_text = update.message.text
     if full_text.startswith('/em'):
         full_text = full_text[3:].strip()
     
     if not full_text:
         await update.message.reply_text(
-            format_with_emojis("Please provide text!"),
+            format_with_emojis("𝐏𝐥𝐞𝐚𝐬𝐞 𝐩𝐫𝐨𝐯𝐢𝐝𝐞 𝐭𝐞𝐱𝐭!"),
             parse_mode="HTML"
         )
         return
     
-    # Process each line separately
     lines = full_text.split('\n')
     result_lines = []
     for line in lines:
@@ -448,50 +476,14 @@ async def em_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(result, parse_mode="HTML")
 
 # ============================================================
-# /start COMMAND
-# ============================================================
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    
-    users = load_users()
-    if str(user_id) not in users:
-        users[str(user_id)] = {
-            "username": update.effective_user.username or "NoUsername",
-            "first_seen": datetime.now().isoformat()
-        }
-        save_users(users)
-    
-    msg = """BETTING BOT
-
-Commands:
-/dice - Roll dice (1-6)
-/flipcoin - Flip coin (HEAD/TAIL)
-/em text - Add premium emojis around text
-
-Admin Commands:
-/forcedice 1-6 - Force next dice
-/forcecoin HEAD/TAIL - Force next coin
-/approve USER_ID - Make admin
-
-/all - Show all premium emojis
-
-━━━━━━━━━━━━━━━━━━
-Only group admins can use /dice & /flipcoin"""
-    
-    await update.message.reply_text(format_with_emojis(msg), parse_mode="HTML")
-
-# ============================================================
 # MAIN
 # ============================================================
 def main():
-    # Start Flask thread for Render
     flask_thread = threading.Thread(target=run_flask, daemon=True)
     flask_thread.start()
     
-    # Start Bot
     application = Application.builder().token(BOT_TOKEN).build()
     
-    # Commands
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("dice", dice))
     application.add_handler(CommandHandler("flipcoin", flipcoin))
